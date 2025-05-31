@@ -18,25 +18,9 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: task-management-redis
-    ports:
-      - '${REDIS_PORT}:6379'
-    volumes:
-      - redis_data:/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 networks:
   app-network:
     driver: bridge
 
 volumes:
   postgres_data:
-  redis_data:

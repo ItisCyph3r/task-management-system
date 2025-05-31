@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-store';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TaskModule } from './task/task.module';
@@ -44,17 +42,13 @@ import { HealthModule } from './health/health.module';
           poolSize: 10,
           connectTimeoutMS: 20000,
           maxQueryExecutionTime: 10000,
-          // Add retry logic for connection
           retryAttempts: 10,
           retryDelay: 3000,
           keepConnectionAlive: true,
-          // Add SSL configuration if needed
-          // ssl: configService.get('NODE_ENV') === 'production',
           extra: {
-            // Additional PostgreSQL client options
-            max: 20, // Maximum number of clients in the pool
-            idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-            connectionTimeoutMillis: 20000, // Maximum time to wait for a connection from the pool
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 20000,
           },
         };
       },
@@ -72,65 +66,7 @@ import { HealthModule } from './health/health.module';
       ]),
     }),
     
-    // Redis cache
-    CacheModule.registerAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        try {
-          const host = configService.get<string>('REDIS_HOST');
-          const port = configService.get<number>('REDIS_PORT');
-          const ttl = configService.get<number>('REDIS_TTL', 3600);
-          
-          console.log(`Configuring Redis cache with host=${host}, port=${port}, ttl=${ttl}`);
-          
-          // Create Redis store with more explicit configuration
-          const store = await redisStore({
-            socket: {
-              host,
-              port,
-              reconnectStrategy: (retries) => {
-                console.log(`Redis reconnection attempt ${retries}`);
-                return Math.min(retries * 50, 2000);
-              }
-            },
-            ttl,
-            disableReconnecting: false,
-            retryStrategy: (times) => {
-              console.log(`Redis retry attempt ${times}`);
-              return Math.min(times * 50, 2000);
-            },
-            // Add event handlers for the Redis client
-            // These will be attached to the underlying Redis client
-            onClientCreated: (client) => {
-              client.on('error', (err) => {
-                console.error('Redis client error:', err);
-              });
-              client.on('connect', () => {
-                console.log('Redis client connected');
-              });
-              client.on('reconnecting', () => {
-                console.log('Redis client reconnecting');
-              });
-            }
-          });
-          
-          return {
-            store,
-            ttl,
-          };
-        } catch (error) {
-          console.error('Error configuring Redis cache:', error);
-          // Return a fallback configuration that won't crash the app
-          // This allows the app to start even if Redis is unavailable
-          return {
-            ttl: 300, // 5 minutes default TTL
-            // No store means it will use memory cache as fallback
-          };
-        }
-      },
-    }),
+
     
     // Application modules
     AuthModule,
