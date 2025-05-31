@@ -40,6 +40,9 @@ The application follows a modular architecture with clear separation of concerns
 - **DTOs**: Data Transfer Objects for request/response validation
 - **Guards**: Handle authorization
 - **Decorators**: Custom decorators for role-based access control
+- **Filters**: Global exception filters for consistent error handling
+
+For detailed architecture diagrams, see the [System Architecture Diagram](docs/diagrams/system-architecture.md).
 
 ## Project Setup
 
@@ -139,15 +142,40 @@ $ npm run migration:run
 $ npm run migration:revert
 ```
 
-## API Documentation
+## Documentation
+
+### API Documentation
 
 The API is documented using Swagger. After starting the application, you can access the Swagger UI at:
 
 ```
-http://localhost:3000/api/docs
+http://localhost:1984/api/docs
 ```
 
+### Workflow Diagrams
+
+Detailed workflow diagrams are available to illustrate the key processes in the application:
+
+- [Authentication Flow](docs/diagrams/authentication-flow.md): Login, logout, and token verification processes
+- [Task Management Flow](docs/diagrams/task-management-flow.md): Task creation, retrieval, update, and deletion
+- [System Architecture](docs/diagrams/system-architecture.md): Overall system architecture and component relationships
+
+### API Structure
+
+The application follows a RESTful API structure with the following characteristics:
+
+- Resource-based URLs
+- Proper use of HTTP methods (GET, POST, PATCH, DELETE)
+- Consistent response formats
+- Comprehensive error handling
+- API versioning (URI-based: `/api/v1/resource`)
+- Backward compatibility support
+
 ### Main Endpoints
+
+#### Health Checks
+- `GET /api/health`: Comprehensive health check of the application, database, memory, and disk
+- `GET /api/health/ping`: Simple ping endpoint for basic connectivity tests
 
 #### Authentication
 - `POST /api/auth/login`: User login
@@ -155,6 +183,7 @@ http://localhost:3000/api/docs
 
 #### Users
 - `GET /api/users`: Get all users (ADMIN only)
+- `GET /api/users/profile`: Get current user profile
 - `GET /api/users/:id`: Get user by ID
 - `POST /api/users`: Create a new user (ADMIN only)
 
@@ -182,6 +211,17 @@ $ npm run test:e2e
 
 ## Deployment Considerations
 
+### CI/CD Pipeline
+
+The application includes a GitHub Actions CI/CD pipeline that automates testing and deployment:
+
+1. **Continuous Integration**: Automatically runs linting, unit tests, and e2e tests on every push and pull request
+2. **Test Coverage**: Generates and uploads test coverage reports
+3. **Automated Builds**: Creates production builds for deployment
+4. **Deployment Automation**: Deploys the application to the production environment when changes are pushed to the main branch
+
+The CI/CD configuration can be found in `.github/workflows/ci-cd.yml`.
+
 ### Production Deployment
 
 For production deployment, consider the following:
@@ -190,7 +230,7 @@ For production deployment, consider the following:
 2. Set up a reverse proxy (Nginx, Apache) in front of the application
 3. Configure SSL/TLS for secure communication
 4. Set up proper logging and monitoring
-5. Use a CI/CD pipeline for automated testing and deployment
+5. Leverage the CI/CD pipeline for automated testing and deployment
 
 ### Scaling
 
@@ -230,20 +270,23 @@ The application implements RBAC using custom decorators and guards. This allows:
 
 ### Error Handling
 
-The application uses a consistent error handling approach with:
+The application implements a comprehensive error handling strategy with global exception filters:
 
-- HTTP exception filters
-- Proper HTTP status codes
-- Meaningful error messages
-- Validation error formatting
+- **HttpExceptionFilter**: Handles all HTTP exceptions with consistent formatting
+- **AllExceptionsFilter**: Catches any unhandled exceptions to prevent server crashes
+- **Standardized Error Responses**: All errors follow a consistent format with status code, timestamp, path, and message
+- **Proper HTTP Status Codes**: Uses appropriate status codes for different error types
+- **Detailed Validation Errors**: Provides meaningful validation error messages
+- **Error Logging**: Logs errors with stack traces for debugging
 
 ### Soft Delete
 
 The application implements soft delete for tasks, which:
 
-- Preserves data for auditing purposes
-- Allows for data recovery if needed
-- Maintains referential integrity
+- Preserves data for auditing purposes by setting a deletion timestamp instead of removing records
+- Allows for data recovery if needed by filtering on the `deletedAt` column
+- Maintains referential integrity by keeping related records intact
+- Automatically filters out soft-deleted records from standard queries
 
 ## License
 

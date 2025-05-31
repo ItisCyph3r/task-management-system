@@ -7,6 +7,7 @@ import { redisStore } from 'cache-manager-redis-store';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TaskModule } from './task/task.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { TaskModule } from './task/task.module';
     AuthModule,
     UserModule,
     TaskModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

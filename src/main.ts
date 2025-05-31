@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { HttpAdapterHost } from '@nestjs/core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,8 +20,16 @@ async function bootstrap() {
   
   // Configure CORS to allow credentials (cookies)
   app.enableCors({
-    origin: true, // Allow requests from any origin in development
-    credentials: true, // Allow cookies to be sent with requests
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+  
+  // API versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'v',
   });
   
   app.use(helmet());
@@ -33,12 +44,20 @@ async function bootstrap() {
     }),
   );
   
+  // Global exception filters
+  const httpAdapterHost = app.get(HttpAdapterHost);
+  app.useGlobalFilters(
+    new AllExceptionsFilter(httpAdapterHost),
+    new HttpExceptionFilter(),
+  );
+  
   // Swagger documentation
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Task Management API')
     .setDescription('RESTful API for a task management system')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(`/${apiPrefix}/v1`, 'API v1')
     .build();
   
   const document = SwaggerModule.createDocument(app, swaggerConfig);
