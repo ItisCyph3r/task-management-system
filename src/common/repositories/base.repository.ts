@@ -22,11 +22,12 @@ export class BaseRepository<T extends ObjectLiteral> {
 
   async create(data: DeepPartial<T>): Promise<T> {
     const entity = this.repository.create(data);
-    return this.repository.save(entity as any);
+    return this.repository.save(entity);
   }
 
   async update(id: string, data: DeepPartial<T>): Promise<T | null> {
-    await this.repository.update(id, data as any);
+    const where = { id } as unknown as FindOptionsWhere<T>;
+    await this.repository.update(where, data as any);
     return this.findOne(id);
   }
 

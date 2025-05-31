@@ -20,11 +20,11 @@ import { HealthModule } from './health/health.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const host = configService.get('DB_HOST');
-        const port = configService.get('DB_PORT');
-        const username = configService.get('DB_USERNAME');
-        const password = configService.get('DB_PASSWORD');
-        const database = configService.get('DB_DATABASE');
+        const host = configService.get<string>('DB_HOST');
+        const port = configService.get<number>('DB_PORT');
+        const username = configService.get<string>('DB_USERNAME');
+        const password = configService.get<string>('DB_PASSWORD');
+        const database = configService.get<string>('DB_DATABASE');
         
         console.log(`Configuring database connection with host=${host}, port=${port}, database=${database}`);
         
@@ -37,8 +37,8 @@ import { HealthModule } from './health/health.module';
           database,
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-          synchronize: configService.get('DB_SYNCHRONIZE') === 'true',
-          logging: configService.get('NODE_ENV') === 'development',
+          synchronize: configService.get<string>('DB_SYNCHRONIZE') === 'true',
+          logging: configService.get<string>('NODE_ENV') === 'development',
           poolSize: 10,
           connectTimeoutMS: 20000,
           maxQueryExecutionTime: 10000,

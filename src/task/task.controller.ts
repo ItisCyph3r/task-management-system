@@ -6,6 +6,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskResponseDto } from './dto/task-response.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TaskStatus, TaskPriority } from './entities/task.entity';
+import { UserRole } from '../user/entities/user.entity';
 
 @ApiTags('Tasks')
 @Controller('tasks')
@@ -23,7 +24,7 @@ export class TaskController {
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
   async findAll(
-    @Req() req,
+    @Req() req: { user: { id: string, role: UserRole } },
     @Query('status') status?: TaskStatus,
     @Query('priority') priority?: TaskPriority,
     @Query('page') page: number = 1,
@@ -52,7 +53,7 @@ export class TaskController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async findOne(@Param('id') id: string, @Req() req): Promise<TaskResponseDto> {
+  async findOne(@Param('id') id: string, @Req() req: { user: { id: string, role: UserRole } }): Promise<TaskResponseDto> {
     return this.taskService.findOne(id, req.user.id, req.user.role);
   }
 
@@ -62,7 +63,7 @@ export class TaskController {
   @ApiResponse({ status: 400, description: 'Bad request - Invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async create(@Body() createTaskDto: CreateTaskDto, @Req() req): Promise<TaskResponseDto> {
+  async create(@Body() createTaskDto: CreateTaskDto, @Req() req: { user: { id: string } }): Promise<TaskResponseDto> {
     return this.taskService.create(createTaskDto, req.user.id);
   }
 
@@ -76,7 +77,7 @@ export class TaskController {
   async update(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-    @Req() req,
+    @Req() req: { user: { id: string, role: UserRole } },
   ): Promise<TaskResponseDto> {
     return this.taskService.update(id, updateTaskDto, req.user.id, req.user.role);
   }
@@ -87,7 +88,7 @@ export class TaskController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async remove(@Param('id') id: string, @Req() req): Promise<void> {
+  async remove(@Param('id') id: string, @Req() req: { user: { id: string, role: UserRole } }): Promise<void> {
     return this.taskService.remove(id, req.user.id, req.user.role);
   }
 }
