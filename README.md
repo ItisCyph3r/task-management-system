@@ -25,7 +25,6 @@ This is a RESTful API for a Task Management System built with NestJS, TypeORM, a
 - **Filtering and Pagination**: Filter tasks by status, priority, and paginate results
 - **Swagger Documentation**: Comprehensive API documentation
 - **Database Migrations**: Proper database schema migrations
-- **Caching**: Redis integration for improved performance
 - **Security**: Rate limiting, CORS configuration, and security headers
 
 ## Architecture
@@ -115,7 +114,6 @@ Key environment variables:
 - `API_PREFIX`: API route prefix
 - `DB_*`: Database connection details
 - `JWT_*`: JWT authentication configuration
-- `REDIS_*`: Redis cache configuration
 - `THROTTLE_*`: Rate limiting configuration
 
 ## Database Setup
@@ -180,7 +178,7 @@ The application follows a RESTful API structure with the following characteristi
 #### Authentication
 - `POST /api/auth/login`: User login
 - `POST /api/auth/logout`: User logout
-
+- `POST /api/auth/register`: User registration 
 #### Users
 - `GET /api/users`: Get all users (ADMIN only)
 - `GET /api/users/profile`: Get current user profile
@@ -208,38 +206,6 @@ $ npm run test:cov
 # Run e2e tests
 $ npm run test:e2e
 ```
-
-## Deployment Considerations
-
-### CI/CD Pipeline
-
-The application includes a GitHub Actions CI/CD pipeline that automates testing and deployment:
-
-1. **Continuous Integration**: Automatically runs linting, unit tests, and e2e tests on every push and pull request
-2. **Test Coverage**: Generates and uploads test coverage reports
-3. **Automated Builds**: Creates production builds for deployment
-4. **Deployment Automation**: Deploys the application to the production environment when changes are pushed to the main branch
-
-The CI/CD configuration can be found in `.github/workflows/ci-cd.yml`.
-
-### Production Deployment
-
-For production deployment, consider the following:
-
-1. Use a process manager like PM2 to manage the Node.js process
-2. Set up a reverse proxy (Nginx, Apache) in front of the application
-3. Configure SSL/TLS for secure communication
-4. Set up proper logging and monitoring
-5. Leverage the CI/CD pipeline for automated testing and deployment
-
-### Scaling
-
-The application can be scaled horizontally by:
-
-1. Running multiple instances behind a load balancer
-2. Using a shared Redis instance for caching and session management
-3. Optimizing database queries and adding appropriate indexes
-4. Implementing database connection pooling
 
 ## Architecture Decisions
 
